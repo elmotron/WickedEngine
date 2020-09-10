@@ -1220,12 +1220,12 @@ void LoadShaders()
 	wiJobSystem::Execute(ctx, [](wiJobArgs args) { LoadShader(VS, vertexShaders[VSTYPE_LIGHTVISUALIZER_RECTANGLELIGHT], "vRectangleLightVS.cso"); });
 	wiJobSystem::Execute(ctx, [](wiJobArgs args) { LoadShader(VS, vertexShaders[VSTYPE_LIGHTVISUALIZER_TUBELIGHT], "vTubeLightVS.cso"); });
 	wiJobSystem::Execute(ctx, [](wiJobArgs args) { LoadShader(VS, vertexShaders[VSTYPE_DECAL], "decalVS.cso"); });
-	wiJobSystem::Execute(ctx, [](wiJobArgs args) { LoadShader(VS, vertexShaders[VSTYPE_ENVMAP], "envMapVS.cso"); });
-	wiJobSystem::Execute(ctx, [](wiJobArgs args) { LoadShader(VS, vertexShaders[VSTYPE_ENVMAP_SKY], "envMap_skyVS.cso"); });
+//	wiJobSystem::Execute(ctx, [](wiJobArgs args) { LoadShader(VS, vertexShaders[VSTYPE_ENVMAP], "envMapVS.cso"); });
+//	wiJobSystem::Execute(ctx, [](wiJobArgs args) { LoadShader(VS, vertexShaders[VSTYPE_ENVMAP_SKY], "envMap_skyVS.cso"); });
 	wiJobSystem::Execute(ctx, [](wiJobArgs args) { LoadShader(VS, vertexShaders[VSTYPE_SPHERE], "sphereVS.cso"); });
 	wiJobSystem::Execute(ctx, [](wiJobArgs args) { LoadShader(VS, vertexShaders[VSTYPE_CUBE], "cubeVS.cso"); });
-	wiJobSystem::Execute(ctx, [](wiJobArgs args) { LoadShader(VS, vertexShaders[VSTYPE_SHADOWCUBEMAPRENDER], "cubeShadowVS.cso"); });
-	wiJobSystem::Execute(ctx, [](wiJobArgs args) { LoadShader(VS, vertexShaders[VSTYPE_SHADOWCUBEMAPRENDER_ALPHATEST], "cubeShadowVS_alphatest.cso"); });
+//	wiJobSystem::Execute(ctx, [](wiJobArgs args) { LoadShader(VS, vertexShaders[VSTYPE_SHADOWCUBEMAPRENDER], "cubeShadowVS.cso"); });
+//	wiJobSystem::Execute(ctx, [](wiJobArgs args) { LoadShader(VS, vertexShaders[VSTYPE_SHADOWCUBEMAPRENDER_ALPHATEST], "cubeShadowVS_alphatest.cso"); });
 	wiJobSystem::Execute(ctx, [](wiJobArgs args) { LoadShader(VS, vertexShaders[VSTYPE_SKY], "skyVS.cso"); });
 	wiJobSystem::Execute(ctx, [](wiJobArgs args) { LoadShader(VS, vertexShaders[VSTYPE_VOXELIZER], "objectVS_voxelizer.cso"); });
 	wiJobSystem::Execute(ctx, [](wiJobArgs args) { LoadShader(VS, vertexShaders[VSTYPE_VOXEL], "voxelVS.cso"); });

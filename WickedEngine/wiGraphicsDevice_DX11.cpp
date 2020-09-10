@@ -1355,6 +1355,9 @@ GraphicsDevice_DX11::GraphicsDevice_DX11(wiPlatform::window_type window, bool fu
 	ComPtr<IDXGIAdapter> pDXGIAdapter;
 	hr = pDXGIDevice->GetParent(__uuidof(IDXGIAdapter), (void**)&pDXGIAdapter);
 
+	DXGI_ADAPTER_DESC desc;
+	pDXGIAdapter->GetDesc(&desc);
+
 	ComPtr<IDXGIFactory2> pIDXGIFactory;
 	pDXGIAdapter->GetParent(__uuidof(IDXGIFactory2), (void**)&pIDXGIFactory);
 
