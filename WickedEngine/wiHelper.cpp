@@ -274,6 +274,10 @@ namespace wiHelper
 		return workingdir;
 	}
 
+	std::string GetDataDirectory() {
+		return "D:\\projects\\AquaSim\\3rdParty\\WickedEngine\\WickedEngine\\";//TODO fix
+	}
+
 	void SetWorkingDirectory(const std::string& path)
 	{
 		workingdir = path;
