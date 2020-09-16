@@ -38,8 +38,8 @@ namespace wiPlatform
 
 	struct DeferredMessageBox
 	{
-		std::wstring caption;
-		std::wstring message;
+		std::string caption;
+		std::string message;
 	};
 
 	struct WindowState

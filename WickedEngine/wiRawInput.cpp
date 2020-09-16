@@ -24,7 +24,7 @@ namespace wiRawInput
 	{
 		HANDLE handle = NULL;
 		bool is_xinput = false;
-		std::wstring name;
+		std::string name;
 		wiInput::ControllerState state;
 	};
 	std::vector<Internal_ControllerState> controllers;
@@ -165,7 +165,7 @@ namespace wiRawInput
 				internal_controller.name.resize(bufferSize + 1);
 				result = GetRawInputDeviceInfo(raw.header.hDevice, RIDI_DEVICENAME, (void*)internal_controller.name.data(), &bufferSize);
 				assert(result != -1);
-				internal_controller.is_xinput = internal_controller.name.find(L"IG_") != std::wstring::npos;
+				internal_controller.is_xinput = internal_controller.name.find("IG_") != std::string::npos;
 				internal_controller.handle = raw.header.hDevice;
 			}
 

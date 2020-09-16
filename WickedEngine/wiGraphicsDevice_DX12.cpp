@@ -2024,7 +2024,7 @@ using namespace DX12_Internal;
 		if (debuglayer)
 		{
 			// Enable the debug layer.
-			HMODULE dx12 = LoadLibraryEx(L"d3d12.dll",
+			HMODULE dx12 = LoadLibraryEx("d3d12.dll",
 				nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
 			auto pD3D12GetDebugInterface =
 				reinterpret_cast<PFN_D3D12_GET_DEBUG_INTERFACE>(

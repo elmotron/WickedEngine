@@ -44,8 +44,6 @@ namespace wiHelper
 		auto& state = wiPlatform::GetWindowState();
 		state.messagemutex.lock();
 		state.messages.emplace_back();
-		StringConvert(msg, state.messages.back().message);
-		StringConvert(caption, state.messages.back().caption);
 		state.messagemutex.unlock();
 	}
 
