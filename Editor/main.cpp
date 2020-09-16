@@ -10,8 +10,8 @@ using namespace std;
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
-WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
-WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
+CHAR szTitle[MAX_LOADSTRING];                  // The title bar text
+CHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 Editor editor;
 
 
@@ -43,8 +43,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	wiStartupArguments::Parse(lpCmdLine); // if you wish to use command line arguments, here is a good place to parse them...
 
     // Initialize global strings
-    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_WICKEDENGINEGAME, szWindowClass, MAX_LOADSTRING);
+    LoadString(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
+    LoadString(hInstance, IDC_WICKEDENGINEGAME, szWindowClass, MAX_LOADSTRING);
     MyRegisterClass(hInstance);
 
     // Perform application initialization:
@@ -82,7 +82,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 //
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
-    WNDCLASSEXW wcex;
+    WNDCLASSEX wcex;
 
     wcex.cbSize = sizeof(WNDCLASSEX);
 
@@ -95,11 +95,11 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
     //wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_WICKEDENGINEGAME);
-	wcex.lpszMenuName = L"";
+	wcex.lpszMenuName = "";
     wcex.lpszClassName  = szWindowClass;
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
-    return RegisterClassExW(&wcex);
+    return RegisterClassEx(&wcex);
 }
 
 //
