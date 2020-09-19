@@ -3,7 +3,7 @@
 #include "ModelImporter.h"
 
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "tiny_obj_loader.h"
+#include "Utility/tiny_obj_loader.h"
 
 #include <istream>
 #include <streambuf>

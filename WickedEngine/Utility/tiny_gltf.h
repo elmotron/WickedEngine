@@ -49,6 +49,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <fstream>
 
 #ifdef __ANDROID__
 #ifdef TINYGLTF_ANDROID_LOAD_FROM_ASSETS
@@ -4615,6 +4616,7 @@ namespace tinygltf {
 
 	static bool SerializeGltfBufferData(const std::vector<unsigned char> &data,
 		const std::string &binFilename) {
+
 		std::ofstream output(binFilename.c_str(), std::ofstream::binary);
 		if (!output.is_open()) return false;
 		output.write(reinterpret_cast<const char *>(&data[0]),

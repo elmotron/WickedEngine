@@ -3,7 +3,7 @@
 #include "ObjectWindow.h"
 #include "wiScene.h"
 
-#include "xatlas.h"
+#include "Utility/xatlas.h"
 
 #include <sstream>
 #include <unordered_set>

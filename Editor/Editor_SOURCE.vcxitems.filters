@@ -26,7 +26,6 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)TransformWindow.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Translator.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)WeatherWindow.cpp" />
-    <ClCompile Include="$(MSBuildThisFileDirectory)xatlas.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -52,12 +51,9 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)RendererWindow.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SoundWindow.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)SpringWindow.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)tiny_gltf.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)tiny_obj_loader.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)TransformWindow.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)Translator.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)WeatherWindow.h" />
-    <ClInclude Include="$(MSBuildThisFileDirectory)xatlas.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)stdafx.h" />
   </ItemGroup>
   <ItemGroup>

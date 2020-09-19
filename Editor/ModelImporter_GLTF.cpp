@@ -9,7 +9,7 @@
 #define TINYGLTF_NO_FS
 #define TINYGLTF_NO_STB_IMAGE
 #define TINYGLTF_NO_STB_IMAGE_WRITE
-#include "tiny_gltf.h"
+#include "Utility/tiny_gltf.h"
 
 #include <fstream>
 #include <sstream>
