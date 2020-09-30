@@ -1305,6 +1305,7 @@ namespace wiScene
 		sounds.Merge(other.sounds);
 		inverse_kinematics.Merge(other.inverse_kinematics);
 		springs.Merge(other.springs);
+		flexiChains.Merge(other.flexiChains);
 
 		bounds = AABB::Merge(bounds, other.bounds);
 	}

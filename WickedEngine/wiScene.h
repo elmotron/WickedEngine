@@ -635,8 +635,10 @@ namespace wiScene
 		void Serialize(wiArchive& archive, wiECS::Entity seed = wiECS::INVALID_ENTITY);
 	};
 
-	struct FlexiBoneChain {
-		struct ConstraintParams {
+	struct FlexiBoneChain 
+	{
+		struct ConstraintParams 
+		{
 			float softness = 1.f;
 			float biasFactor = 0.3f;
 			float relaxationFactor = 1.f;
@@ -645,15 +647,14 @@ namespace wiScene
 		float capsuleRadius = 1.0f;
 
 		// Chain definition: bones are ordered parent -> child
-		std::vector<int> bones;
+		std::vector<wiECS::Entity> bones;
 		std::vector<void*> capsuleBodies;
 		std::vector<ConstraintParams> constraints;
 	};
 
-	struct ArmatureComponent {
-		enum FLAGS {
-			EMPTY = 0,
-		};
+	struct ArmatureComponent
+	{
+		enum FLAGS { EMPTY = 0,	};
 		uint32_t _flags = EMPTY;
 
 		std::vector<wiECS::Entity> boneCollection;
@@ -662,19 +663,22 @@ namespace wiScene
 		// Non-serialized attributes:
 		AABB aabb;
 
-		struct ShaderBoneType {
+		struct ShaderBoneType
+		{
 			XMFLOAT4 pose0;
 			XMFLOAT4 pose1;
 			XMFLOAT4 pose2;
 
-			inline void Store(const XMMATRIX& M) {
+			inline void Store(const XMMATRIX& M)
+			{
 				XMFLOAT4X4 mat;
 				XMStoreFloat4x4(&mat, M);
 				pose0 = XMFLOAT4(mat._11, mat._21, mat._31, mat._41);
 				pose1 = XMFLOAT4(mat._12, mat._22, mat._32, mat._42);
 				pose2 = XMFLOAT4(mat._13, mat._23, mat._33, mat._43);
 			}
-			inline XMMATRIX Load() const {
+			inline XMMATRIX Load() const
+			{
 				return XMMATRIX(
 					pose0.x, pose1.x, pose2.x, 0, 
 					pose0.y, pose1.y, pose2.y, 0, 
@@ -1143,6 +1147,7 @@ namespace wiScene
 		wiECS::ComponentManager<SoundComponent> sounds;
 		wiECS::ComponentManager<InverseKinematicsComponent> inverse_kinematics;
 		wiECS::ComponentManager<SpringComponent> springs;
+		wiECS::ComponentManager<FlexiBoneChain> flexiChains;
 
 		// Non-serialized attributes:
 		wiSpinLock locker;

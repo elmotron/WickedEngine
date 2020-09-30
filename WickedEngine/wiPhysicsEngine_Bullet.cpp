@@ -177,6 +177,7 @@ namespace wiPhysicsEngine
 			{
 				rigidbody->setCollisionFlags(rigidbody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
 			}
+
 			if (physicscomponent.IsDisableDeactivation())
 			{
 				rigidbody->setActivationState(DISABLE_DEACTIVATION);
@@ -299,8 +300,8 @@ namespace wiPhysicsEngine
 		btVector3 wind = btVector3(scene.weather.windDirection.x, scene.weather.windDirection.y, scene.weather.windDirection.z);
 
 		// System will register rigidbodies to objects, and update physics engine state for kinematics:
-		wiJobSystem::Dispatch(ctx, (uint32_t)scene.rigidbodies.GetCount(), 256, [&](wiJobArgs args) {
-
+		wiJobSystem::Dispatch(ctx, (uint32_t)scene.rigidbodies.GetCount(), 256, [&](wiJobArgs args) 
+		{
 			RigidBodyPhysicsComponent& physicscomponent = scene.rigidbodies[args.jobIndex];
 			Entity entity = scene.rigidbodies.GetEntity(args.jobIndex);
 
@@ -349,8 +350,8 @@ namespace wiPhysicsEngine
 		});
 
 		// System will register softbodies to meshes and update physics engine state:
-		wiJobSystem::Dispatch(ctx, (uint32_t)scene.softbodies.GetCount(), 1, [&](wiJobArgs args) {
-
+		wiJobSystem::Dispatch(ctx, (uint32_t)scene.softbodies.GetCount(), 1, [&](wiJobArgs args)
+		{
 			SoftBodyPhysicsComponent& physicscomponent = scene.softbodies[args.jobIndex];
 			Entity entity = scene.softbodies.GetEntity(args.jobIndex);
 			MeshComponent& mesh = *scene.meshes.GetComponent(entity);
@@ -399,6 +400,81 @@ namespace wiPhysicsEngine
 					}
 				}
 			}
+		});
+
+		// System will register flexi bone chains
+		wiJobSystem::Dispatch(ctx, (uint32_t)scene.flexiChains.GetCount(), 1, [&](wiJobArgs args)
+		{
+			FlexiBoneChain& boneChain = scene.flexiChains[args.jobIndex];
+			Entity entity = scene.flexiChains.GetEntity(args.jobIndex);
+
+			if (boneChain.bones.size() != boneChain.capsuleBodies.size())
+			{
+				boneChain.capsuleBodies.resize(boneChain.bones.size(), nullptr);
+				
+				for (int i = 0; i < (int)boneChain.bones.size() - 1; ++i)
+				{
+					wiECS::Entity parent = boneChain.bones[i];
+					wiECS::Entity child = boneChain.bones[i+1];
+
+					const wiScene::TransformComponent* tmChild = scene.transforms.GetComponent(child);
+					assert(tmChild);
+
+					// Capsule length for parent bone is essentially the local translation of its child
+					XMVECTOR localPosV = XMLoadFloat3(&tmChild->translation_local);
+					XMVECTOR lenV = XMVector3Length(localPosV);
+					
+					//const float caplen = XMVectorGetX(lenV);
+
+					btTransform transform;
+				//	transform.setIdentity();
+				//	transform.setOrigin(btVector3(0.f, yoff, 0.f));
+				// TODO
+
+				}
+			}
+#if 0
+				TransformComponent& transform = *scene.transforms.GetComponent(entity);
+				const ObjectComponent& object = *scene.objects.GetComponent(entity);
+				const MeshComponent& mesh = *scene.meshes.GetComponent(object.meshID);
+				physicsLock.lock();
+				AddRigidBody(entity, physicscomponent, mesh, transform);
+				physicsLock.unlock();
+			}
+
+			if (physicscomponent.physicsobject != nullptr)
+			{
+				btRigidBody* rigidbody = (btRigidBody*)physicscomponent.physicsobject;
+
+				int activationState = rigidbody->getActivationState();
+				if (physicscomponent.IsDisableDeactivation())
+				{
+					activationState |= DISABLE_DEACTIVATION;
+				}
+				else
+				{
+					activationState &= ~DISABLE_DEACTIVATION;
+				}
+				rigidbody->setActivationState(activationState);
+
+				// For kinematic object, system updates physics state, else the physics updates system state:
+				if (physicscomponent.IsKinematic())
+				{
+					TransformComponent& transform = *scene.transforms.GetComponent(entity);
+
+					btMotionState* motionState = rigidbody->getMotionState();
+					btTransform physicsTransform;
+
+					XMFLOAT3 position = transform.GetPosition();
+					XMFLOAT4 rotation = transform.GetRotation();
+					btVector3 T(position.x, position.y, position.z);
+					btQuaternion R(rotation.x, rotation.y, rotation.z, rotation.w);
+					physicsTransform.setOrigin(T);
+					physicsTransform.setRotation(R);
+					motionState->setWorldTransform(physicsTransform);
+				}
+			}
+#endif
 		});
 
 		wiJobSystem::Wait(ctx);
