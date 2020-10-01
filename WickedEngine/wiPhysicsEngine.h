@@ -15,4 +15,6 @@ namespace wiPhysicsEngine
 		wiScene::Scene& scene,
 		float dt
 	);
+
+	void DebugDrawWorld();
 }

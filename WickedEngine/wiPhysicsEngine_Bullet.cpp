@@ -23,7 +23,7 @@ namespace wiPhysicsEngine
 	bool ENABLED = true;
 	std::mutex physicsLock;
 
-	btVector3 gravity(0, -10, 0);
+	btVector3 gravity(0, /*-10*/0, 0);
 	int softbodyIterationCount = 5;
 	std::unique_ptr<btCollisionConfiguration> collisionConfiguration;
 	std::unique_ptr<btCollisionDispatcher> dispatcher;
@@ -31,6 +31,46 @@ namespace wiPhysicsEngine
 	std::unique_ptr<btSequentialImpulseConstraintSolver> solver;
 	std::unique_ptr<btDynamicsWorld> dynamicsWorld;
 
+	class DebugDrawer : public btIDebugDraw
+	{
+	public:
+		virtual void drawLine(const btVector3& from,const btVector3& to,const btVector3& color) override
+		{
+			wiRenderer::RenderableLine line;
+			line.start = XMFLOAT3(from.x(), from.y(), from.z());
+			line.end = XMFLOAT3(to.x(), to.y(), to.z());
+			line.color_start = XMFLOAT4(color.x(), color.y(), color.z(), 1.0f);
+			line.color_end = XMFLOAT4(color.x(), color.y(), color.z(), 1.0f);
+			wiRenderer::DrawLine(line);
+		}
+
+		virtual void reportErrorWarning(const char* warningString) override {}
+
+		virtual void draw3dText(const btVector3& location,const char* textString) override {}
+	
+		virtual void setDebugMode(int debugMode) override
+		{
+			debugDrawMode = debugMode;
+		}
+	
+		virtual int getDebugMode() const override
+		{
+			return debugDrawMode;
+		}
+
+		virtual void drawContactPoint(const btVector3& PointOnB,const btVector3& normalOnB,
+									  btScalar distance,int lifeTime,const btVector3& color) override
+		{
+		}
+
+	private:
+		int debugDrawMode = btIDebugDraw::DBG_DrawWireframe;
+	};
+
+	void DebugDrawWorld()
+	{
+		dynamicsWorld->debugDrawWorld();
+	}
 
 	void Initialize()
 	{
@@ -53,6 +93,8 @@ namespace wiPhysicsEngine
 		dynamicsWorld->getSolverInfo().m_splitImpulse = true;
 
 		dynamicsWorld->setGravity(gravity);
+
+		dynamicsWorld->setDebugDrawer(new DebugDrawer());
 
 		btSoftRigidDynamicsWorld* softRigidWorld = (btSoftRigidDynamicsWorld*)dynamicsWorld.get();
 		btSoftBodyWorldInfo& softWorldInfo = softRigidWorld->getWorldInfo();
@@ -90,7 +132,7 @@ namespace wiPhysicsEngine
 			break;
 
 		case RigidBodyPhysicsComponent::CollisionShape::CONVEX_HULL:
-			{
+		{
 				shape = new btConvexHullShape();
 				for (auto& pos : mesh.vertex_positions)
 				{
@@ -101,7 +143,7 @@ namespace wiPhysicsEngine
 			break;
 
 		case RigidBodyPhysicsComponent::CollisionShape::TRIANGLE_MESH:
-			{
+		{
 				int totalVerts = (int)mesh.vertex_positions.size();
 				int totalTriangles = (int)mesh.indices.size() / 3;
 
@@ -201,7 +243,7 @@ namespace wiPhysicsEngine
 
 			XMFLOAT3 position = mesh.vertex_positions[graphicsInd];
 			XMVECTOR P = XMLoadFloat3(&position);
-			P = XMVector3Transform(P, worldMatrix);
+			P = DirectX::XMVector3Transform(P, worldMatrix);
 			XMStoreFloat3(&position, P);
 
 			btVerts[i * 3 + 0] = btScalar(position.x);
@@ -394,7 +436,7 @@ namespace wiPhysicsEngine
 						uint32_t graphicsInd = physicscomponent.physicsToGraphicsVertexMapping[ind];
 						XMFLOAT3 position = mesh.vertex_positions[graphicsInd];
 						XMVECTOR P = armature == nullptr ? XMLoadFloat3(&position) : wiScene::SkinVertex(mesh, *armature, graphicsInd);
-						P = XMVector3Transform(P, worldMatrix);
+						P = DirectX::XMVector3Transform(P, worldMatrix);
 						XMStoreFloat3(&position, P);
 						node.m_x = btVector3(position.x, position.y, position.z);
 					}
@@ -417,20 +459,42 @@ namespace wiPhysicsEngine
 					wiECS::Entity parent = boneChain.bones[i];
 					wiECS::Entity child = boneChain.bones[i+1];
 
+					const wiScene::TransformComponent* tmParent = scene.transforms.GetComponent(parent);
 					const wiScene::TransformComponent* tmChild = scene.transforms.GetComponent(child);
-					assert(tmChild);
+					assert(tmParent && tmChild);
 
-					// Capsule length for parent bone is essentially the local translation of its child
-					XMVECTOR localPosV = XMLoadFloat3(&tmChild->translation_local);
-					XMVECTOR lenV = XMVector3Length(localPosV);
-					
-					//const float caplen = XMVectorGetX(lenV);
+					XMVECTOR childBonePos = tmChild->GetPositionV();
+					XMVECTOR parentBonePos = tmParent->GetPositionV();
+					XMVECTOR boneVec = DirectX::XMVectorSubtract(childBonePos, parentBonePos);
 
-					btTransform transform;
-				//	transform.setIdentity();
-				//	transform.setOrigin(btVector3(0.f, yoff, 0.f));
-				// TODO
+					const float boneVecLen = DirectX::XMVectorGetX(DirectX::XMVector3Length(boneVec));
+					const float capsuleHeight = boneVecLen - 2.0f*boneChain.capsuleRadius;
+					assert(capsuleHeight > 0.0f);
 
+					XMVECTOR capsulePosV = DirectX::XMVectorAdd(parentBonePos, DirectX::XMVectorScale(boneVec, 0.5f));
+					XMFLOAT3 capsulePos;
+					DirectX::XMStoreFloat3(&capsulePos, capsulePosV);
+
+					XMFLOAT3 position = tmParent->GetPosition();
+					XMFLOAT4 rotation = tmParent->GetRotation();
+					btVector3 T(capsulePos.x, capsulePos.y, capsulePos.z);
+					btQuaternion R(rotation.x, rotation.y, rotation.z, rotation.w);
+
+					btCapsuleShape* capsuleShape = new btCapsuleShape(boneChain.capsuleRadius, capsuleHeight);
+
+					btTransform capsuleTransform;
+					capsuleTransform.setIdentity();
+					capsuleTransform.setRotation(R);
+					capsuleTransform.setOrigin(T);
+
+					// create the right body
+					btDefaultMotionState* myMotionState = new btDefaultMotionState(capsuleTransform);
+
+					btRigidBody::btRigidBodyConstructionInfo rbInfo(1, myMotionState, capsuleShape, btVector3(0, 0, 0));
+					btRigidBody* rigidbody = new btRigidBody(rbInfo);
+			//		rigidbody->setCollisionFlags(rigidbody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+					dynamicsWorld->addRigidBody(rigidbody);
+					boneChain.capsuleBodies[i] = rigidbody;
 				}
 			}
 #if 0
@@ -489,7 +553,7 @@ namespace wiPhysicsEngine
 			Entity entity = (Entity)collisionobject->getUserIndex();
 
 			btRigidBody* rigidbody = btRigidBody::upcast(collisionobject);
-			if (rigidbody != nullptr)
+			if (false)//rigidbody != nullptr)
 			{
 				RigidBodyPhysicsComponent* physicscomponent = scene.rigidbodies.GetComponent(entity);
 				if (physicscomponent == nullptr)
