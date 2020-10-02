@@ -648,8 +648,9 @@ namespace wiScene
 
 		// Chain definition: bones are ordered parent -> child
 		std::vector<wiECS::Entity> bones;
-		std::vector<void*> capsuleBodies;
-		std::vector<ConstraintParams> constraints;
+		std::vector<float> boneLengths;
+		std::vector<void*> physicsBodies;
+		std::vector<ConstraintParams> constraints; // size is bones.size()-1!
 	};
 
 	struct ArmatureComponent

@@ -64,7 +64,7 @@ namespace wiPhysicsEngine
 		}
 
 	private:
-		int debugDrawMode = btIDebugDraw::DBG_DrawWireframe;
+		int debugDrawMode = btIDebugDraw::DBG_DrawWireframe | DBG_DrawConstraints | DBG_DrawConstraintLimits;
 	};
 
 	void DebugDrawWorld()
@@ -229,6 +229,7 @@ namespace wiPhysicsEngine
 			physicscomponent.physicsobject = rigidbody;
 		}
 	}
+
 	void AddSoftBody(Entity entity, wiScene::SoftBodyPhysicsComponent& physicscomponent, const wiScene::MeshComponent& mesh)
 	{
 		physicscomponent.CreateFromMesh(mesh);
@@ -324,6 +325,29 @@ namespace wiPhysicsEngine
 			((btSoftRigidDynamicsWorld*)dynamicsWorld.get())->addSoftBody(softbody);
 			physicscomponent.physicsobject = softbody;
 		}
+	}
+
+	void testChain(wiECS::Entity e, float angle)
+	{
+		wiScene::Scene& scene = wiScene::GetScene();
+
+		wiScene::FlexiBoneChain* fbc = scene.flexiChains.GetComponent(e);
+		wiScene::TransformComponent* transform = scene.transforms.GetComponent(fbc->bones[0]);
+		transform->RotateRollPitchYaw(XMFLOAT3(0,angle,0));
+
+		btRigidBody* rb = (btRigidBody*)fbc->physicsBodies[0];
+		btMotionState* motionState = rb->getMotionState();
+	
+		XMFLOAT3 position = transform->GetPosition();
+		XMFLOAT4 rotation = transform->GetRotation();
+		btVector3 T(position.x, position.y, position.z);
+		btQuaternion R(rotation.x, rotation.y, rotation.z, rotation.w);
+
+		btTransform physicsTransform;
+		physicsTransform.setOrigin(T);
+		physicsTransform.setRotation(R);
+		
+		motionState->setWorldTransform(physicsTransform);
 	}
 
 	void RunPhysicsUpdateSystem(
@@ -450,10 +474,11 @@ namespace wiPhysicsEngine
 			FlexiBoneChain& boneChain = scene.flexiChains[args.jobIndex];
 			Entity entity = scene.flexiChains.GetEntity(args.jobIndex);
 
-			if (boneChain.bones.size() != boneChain.capsuleBodies.size())
+			if (boneChain.bones.size() != boneChain.physicsBodies.size())
 			{
-				boneChain.capsuleBodies.resize(boneChain.bones.size(), nullptr);
-				
+				boneChain.physicsBodies.resize(boneChain.bones.size(), nullptr);
+				boneChain.boneLengths.resize(boneChain.bones.size(), 0.0f);
+
 				for (int i = 0; i < (int)boneChain.bones.size() - 1; ++i)
 				{
 					wiECS::Entity parent = boneChain.bones[i];
@@ -468,6 +493,8 @@ namespace wiPhysicsEngine
 					XMVECTOR boneVec = DirectX::XMVectorSubtract(childBonePos, parentBonePos);
 
 					const float boneVecLen = DirectX::XMVectorGetX(DirectX::XMVector3Length(boneVec));
+					boneChain.boneLengths[i] = boneVecLen;
+
 					const float capsuleHeight = boneVecLen - 2.0f*boneChain.capsuleRadius;
 					assert(capsuleHeight > 0.0f);
 
@@ -492,9 +519,40 @@ namespace wiPhysicsEngine
 
 					btRigidBody::btRigidBodyConstructionInfo rbInfo(1, myMotionState, capsuleShape, btVector3(0, 0, 0));
 					btRigidBody* rigidbody = new btRigidBody(rbInfo);
-			//		rigidbody->setCollisionFlags(rigidbody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
+
+					rigidbody->setActivationState(rigidbody->getActivationState() | DISABLE_DEACTIVATION);
+					rigidbody->setCollisionFlags(rigidbody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
 					dynamicsWorld->addRigidBody(rigidbody);
-					boneChain.capsuleBodies[i] = rigidbody;
+
+					boneChain.physicsBodies[i] = rigidbody;
+				}
+
+				// Setup constraints
+				for (int i = 0; i < (int)boneChain.constraints.size(); ++i)
+				{
+					const float boneLen = boneChain.boneLengths[i];
+
+					btTransform localA, localB;
+					localA.setIdentity();
+					localB.setIdentity();
+					localA.setOrigin(btVector3(0.0f, btScalar(boneLen * 0.5f), 0.0f));
+					localB.setOrigin(btVector3(0.0f, btScalar(-boneLen * 0.5f), 0.0f));
+
+					const wiScene::FlexiBoneChain::ConstraintParams& p = boneChain.constraints[i];
+
+					btRigidBody* bodyA = reinterpret_cast<btRigidBody*>(boneChain.physicsBodies[i+0]);
+					btRigidBody* bodyB = reinterpret_cast<btRigidBody*>(boneChain.physicsBodies[i+1]);
+
+					btConeTwistConstraint* constr = new btConeTwistConstraint(*bodyA, *bodyB, localA, localB);
+
+					constr->setLimit(XM_PIDIV4, 
+									 XM_PIDIV4, 
+									 0,
+									 p.softness,
+									 p.biasFactor,
+									 p.relaxationFactor);
+
+					dynamicsWorld->addConstraint(constr, true);
 				}
 			}
 #if 0

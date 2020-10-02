@@ -17,4 +17,6 @@ namespace wiPhysicsEngine
 	);
 
 	void DebugDrawWorld();
+
+	void testChain(wiECS::Entity e, float angle);
 }
