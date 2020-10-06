@@ -44,7 +44,6 @@
 #include "wiTextureHelper.h"
 #include "wiRandom.h"
 #include "wiColor.h"
-#include "wiPhysicsEngine.h"
 #include "wiEnums.h"
 #include "wiInitializer.h"
 #include "wiLua.h"
