@@ -123,6 +123,7 @@ namespace wiScene
 		std::atomic<uint32_t> geometryOffset;
 
 		Scene();
+		~Scene();
 
 		// Update all components by a given timestep (in seconds):
 		void Update(float dt);
@@ -186,6 +187,8 @@ namespace wiScene
 		IntersectSphereResult IntersectSphere(const SPHERE& sphere, uint32_t renderTypeMask = RENDERTYPE_OPAQUE, uint32_t layerMask = ~0) const;
 		IntersectSphereResult IntersectCapsule(const CAPSULE& capsule, uint32_t renderTypeMask = RENDERTYPE_OPAQUE, uint32_t layerMask = ~0) const;
 
+		void DestroyPhysicsEngine();//TODO remove from here
+
 	private:
 		struct PhysicsEngine;
 
@@ -195,7 +198,7 @@ namespace wiScene
 
 	private:
 		void InitPhysicsEngine();
-
+		
 		void RunPreviousFrameTransformUpdateSystem(wiJobSystem::context& ctx);
 		void RunAnimationUpdateSystem(wiJobSystem::context& ctx, float dt);
 		void RunTransformUpdateSystem(wiJobSystem::context& ctx);

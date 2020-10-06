@@ -18,9 +18,23 @@ using namespace std;
 using namespace wiECS;
 using namespace wiScene;
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+#ifndef M_PI_2
+#define M_PI_2 1.57079632679489661923
+#endif
+
+#ifndef M_PI_4
+#define M_PI_4 0.785398163397448309616
+#endif
+
 struct wiScene::Scene::PhysicsEngine
 {
 	std::mutex physicsLock;
+
+	btGeneric6DofSpring2Constraint* servoMotorConstraint = nullptr; // DEBUG
 
 	btVector3 gravity = btVector3(0, /*-10*/0, 0);
 	int softbodyIterationCount = 5;
@@ -350,6 +364,21 @@ void wiScene::Scene::InitPhysicsEngine()
 	softWorldInfo.m_sparsesdf.Initialize();
 
 	wiBackLog::post("wiPhysicsEngine_Bullet Initialized");
+}
+
+void wiScene::Scene::DestroyPhysicsEngine()
+{
+	if (physicsEngine)
+	{
+		if (physicsEngine->servoMotorConstraint)
+		{
+			physicsEngine->dynamicsWorld->removeConstraint(physicsEngine->servoMotorConstraint);
+			physicsEngine->servoMotorConstraint = nullptr;
+		}
+		delete physicsEngine;
+	}
+
+	physicsEngine = nullptr;
 }
 
 void wiScene::Scene::PhysicsEngine::AddRigidBody(Entity entity, wiScene::RigidBodyPhysicsComponent& physicscomponent, const wiScene::MeshComponent& mesh, const wiScene::TransformComponent& transform)
@@ -773,8 +802,7 @@ void wiScene::Scene::RunPhysicsUpdateSystem(wiJobSystem::context& ctx, float dt)
 				btRigidBody* rigidbody = new btRigidBody(rbInfo);
 
 				rigidbody->setActivationState(rigidbody->getActivationState() | DISABLE_DEACTIVATION);
-				//		rigidbody->setCollisionFlags(rigidbody->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT);
-				physicsEngine->dynamicsWorld->addRigidBody(rigidbody);
+//				physicsEngine->dynamicsWorld->addRigidBody(rigidbody);
 
 				boneChain.physicsBodies[i] = rigidbody;
 			}
@@ -809,15 +837,16 @@ void wiScene::Scene::RunPhysicsUpdateSystem(wiJobSystem::context& ctx, float dt)
 				*/
 				if (i == 0)
 				{
+#if 0
 					wiECS::Entity parent = boneChain.bones[0];
 					const wiScene::TransformComponent* tmParent = transforms.GetComponent(parent);
 					XMFLOAT3 position = tmParent->GetPosition();
 
 					btTransform tm;
 					tm.setIdentity();
-					tm.setOrigin(btVector3(position.x, position.y, position.z + 1));
+					tm.setOrigin(btVector3(position.x, position.y, position.z));
 
-					btSphereShape* ss = new btSphereShape(1);
+					btBoxShape* ss = new btBoxShape(btVector3(1.0f, 1.0f, 1.0f));
 					// create the right body
 					btDefaultMotionState* myMotionState = new btDefaultMotionState(tm);
 
@@ -847,7 +876,42 @@ void wiScene::Scene::RunPhysicsUpdateSystem(wiJobSystem::context& ctx, float dt)
 					fc->getRotationalLimitMotor(5)->m_targetVelocity = 3.f;
 					fc->getRotationalLimitMotor(5)->m_maxMotorForce = 600.f;
 
-					physicsEngine->dynamicsWorld->addConstraint(fc, true);
+//					physicsEngine->dynamicsWorld->addConstraint(fc, true);
+#else
+					{
+						float mass = 1.0;
+						auto shape = new btBoxShape(btVector3(0.5, 0.5, 0.5));
+						btVector3 localInertia(0, 0, 0);
+						shape->calculateLocalInertia(mass, localInertia);
+						btTransform bodyTransform;
+						bodyTransform.setIdentity();
+						bodyTransform.setOrigin(btVector3(0, 0, 0));
+						auto motionState = new btDefaultMotionState(bodyTransform);
+						auto servoMotorBody = new btRigidBody(mass, motionState, shape, localInertia);
+						servoMotorBody->setActivationState(DISABLE_DEACTIVATION);
+						physicsEngine->dynamicsWorld->addRigidBody(servoMotorBody);
+						localA.setIdentity();
+						localA.setOrigin(btVector3(0, 0, 0));
+						localB.setIdentity();
+				//		constraint = new CONSTRAINT_TYPE(*staticBody, *m_data->m_ServoMotorBody, localA, localB EXTRAPARAMS);
+						auto constraint = new btGeneric6DofSpring2Constraint(*servoMotorBody, localB);
+						constraint->setLimit(0, 0, 0);
+						constraint->setLimit(1, 0, 0);
+						constraint->setLimit(2, 0, 0);
+						constraint->setLimit(3, 0, 0);
+						constraint->setLimit(4, 0, 0);
+						constraint->setLimit(5, 1, -1);
+						constraint->enableMotor(5, true);
+						constraint->setTargetVelocity(5, 3.f);
+						constraint->setMaxMotorForce(5, 600.f);
+						constraint->setServo(5, true);
+						constraint->setServoTarget(5, M_PI_2);
+						constraint->setDbgDrawSize(btScalar(2.f));
+
+						physicsEngine->dynamicsWorld->addConstraint(constraint, true);
+						physicsEngine->servoMotorConstraint = constraint;
+					}
+#endif
 				}
 			}
 		}
@@ -896,6 +960,21 @@ void wiScene::Scene::RunPhysicsUpdateSystem(wiJobSystem::context& ctx, float dt)
 	});
 
 	wiJobSystem::Wait(ctx);
+
+	//////////////////////debug tgesting
+	if (physicsEngine->servoMotorConstraint)
+	{
+		static float servoNextFrame = -1;
+		if (servoNextFrame < 0)
+		{
+			physicsEngine->servoMotorConstraint->getRotationalLimitMotor(2)->m_servoTarget *= -1;
+			servoNextFrame = 3.0;
+		}
+	//	float v = JKExponentialInInterpolation(1.0f - servoNextFrame/3.0f, 0.0, 3.0f);
+	//	m_data->m_ServoMotorConstraint->setTargetVelocity(5, fabsf(v));
+		servoNextFrame -= dt;
+	}
+	///////////////////////
 
 	// Perform internal simulation step:
 	physicsEngine->dynamicsWorld->stepSimulation(dt, 10);

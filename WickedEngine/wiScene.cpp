@@ -22,6 +22,12 @@ wiScene::Scene::Scene()
 	weather = new WeatherComponent;
 }
 
+wiScene::Scene::~Scene()
+{
+	delete weather;
+	DestroyPhysicsEngine();
+}
+
 void wiScene::Scene::Update(float dt)
 {
 	GraphicsDevice* device = wiRenderer::GetDevice();
