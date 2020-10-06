@@ -585,7 +585,7 @@ void RenderPath3D::RenderOutline(CommandList cmd) const
 }
 void RenderPath3D::RenderLightShafts(CommandList cmd) const
 {
-	XMVECTOR sunDirection = XMLoadFloat3(&wiScene::GetScene().weather.sunDirection);
+	XMVECTOR sunDirection = XMLoadFloat3(&wiScene::GetScene().weather->sunDirection);
 	if (getLightShaftsEnabled() && XMVectorGetX(XMVector3Dot(sunDirection, wiRenderer::GetCamera().GetAt())) > 0)
 	{
 		GraphicsDevice* device = wiRenderer::GetDevice();

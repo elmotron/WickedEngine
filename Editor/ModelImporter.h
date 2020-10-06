@@ -3,7 +3,7 @@
 
 namespace wiScene
 {
-	struct Scene;
+	class Scene;
 }
 
 void ImportModel_OBJ(const std::string& fileName, wiScene::Scene& scene);

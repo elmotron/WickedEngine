@@ -179,15 +179,15 @@ WeatherWindow::WeatherWindow(EditorComponent* editor) : GUI(&editor->GetGUI())
 	preset0Button->SetTooltip("Apply this weather preset to the world.");
 	preset0Button->SetSize(XMFLOAT2(240, 30));
 	preset0Button->SetPos(XMFLOAT2(x - 100, y += step * 2));
-	preset0Button->OnClick([=](wiEventArgs args) {
-
+	preset0Button->OnClick([=](wiEventArgs args)
+	{
 		Scene& scene = wiScene::GetScene();
 		scene.weathers.Clear();
-		scene.weather = WeatherComponent();
+		scene.weather = new WeatherComponent();
 
 		InvalidateProbes();
 
-		});
+	});
 	weatherWindow->AddWidget(preset0Button);
 
 	wiButton* preset1Button = new wiButton("WeatherPreset - Daytime");
@@ -343,7 +343,7 @@ WeatherWindow::WeatherWindow(EditorComponent* editor) : GUI(&editor->GetGUI())
 	ocean_patchSizeSlider = new wiSlider(1, 1000, 1000, 100000, "Patch size: ");
 	ocean_patchSizeSlider->SetSize(XMFLOAT2(100, 30));
 	ocean_patchSizeSlider->SetPos(XMFLOAT2(x, y += step));
-	ocean_patchSizeSlider->SetValue(wiScene::GetScene().weather.oceanParameters.patch_length);
+	ocean_patchSizeSlider->SetValue(wiScene::GetScene().weather->oceanParameters.patch_length);
 	ocean_patchSizeSlider->SetTooltip("Adjust water tiling patch size");
 	ocean_patchSizeSlider->OnSlide([&](wiEventArgs args) {
 		if (wiScene::GetScene().weathers.GetCount() > 0)
@@ -361,7 +361,7 @@ WeatherWindow::WeatherWindow(EditorComponent* editor) : GUI(&editor->GetGUI())
 	ocean_waveAmplitudeSlider = new wiSlider(0, 1000, 1000, 100000, "Wave amplitude: ");
 	ocean_waveAmplitudeSlider->SetSize(XMFLOAT2(100, 30));
 	ocean_waveAmplitudeSlider->SetPos(XMFLOAT2(x, y += step));
-	ocean_waveAmplitudeSlider->SetValue(wiScene::GetScene().weather.oceanParameters.wave_amplitude);
+	ocean_waveAmplitudeSlider->SetValue(wiScene::GetScene().weather->oceanParameters.wave_amplitude);
 	ocean_waveAmplitudeSlider->SetTooltip("Adjust wave size");
 	ocean_waveAmplitudeSlider->OnSlide([&](wiEventArgs args) {
 		if (wiScene::GetScene().weathers.GetCount() > 0)
@@ -379,7 +379,7 @@ WeatherWindow::WeatherWindow(EditorComponent* editor) : GUI(&editor->GetGUI())
 	ocean_choppyScaleSlider = new wiSlider(0, 10, 1000, 100000, "Choppiness: ");
 	ocean_choppyScaleSlider->SetSize(XMFLOAT2(100, 30));
 	ocean_choppyScaleSlider->SetPos(XMFLOAT2(x, y += step));
-	ocean_choppyScaleSlider->SetValue(wiScene::GetScene().weather.oceanParameters.choppy_scale);
+	ocean_choppyScaleSlider->SetValue(wiScene::GetScene().weather->oceanParameters.choppy_scale);
 	ocean_choppyScaleSlider->SetTooltip("Adjust wave choppiness");
 	ocean_choppyScaleSlider->OnSlide([&](wiEventArgs args) {
 		if (wiScene::GetScene().weathers.GetCount() > 0)
@@ -393,7 +393,7 @@ WeatherWindow::WeatherWindow(EditorComponent* editor) : GUI(&editor->GetGUI())
 	ocean_windDependencySlider = new wiSlider(0, 1, 1000, 100000, "Wind dependency: ");
 	ocean_windDependencySlider->SetSize(XMFLOAT2(100, 30));
 	ocean_windDependencySlider->SetPos(XMFLOAT2(x, y += step));
-	ocean_windDependencySlider->SetValue(wiScene::GetScene().weather.oceanParameters.wind_dependency);
+	ocean_windDependencySlider->SetValue(wiScene::GetScene().weather->oceanParameters.wind_dependency);
 	ocean_windDependencySlider->SetTooltip("Adjust wind contribution");
 	ocean_windDependencySlider->OnSlide([&](wiEventArgs args) {
 		if (wiScene::GetScene().weathers.GetCount() > 0)
@@ -411,7 +411,7 @@ WeatherWindow::WeatherWindow(EditorComponent* editor) : GUI(&editor->GetGUI())
 	ocean_timeScaleSlider = new wiSlider(0, 4, 1000, 100000, "Time scale: ");
 	ocean_timeScaleSlider->SetSize(XMFLOAT2(100, 30));
 	ocean_timeScaleSlider->SetPos(XMFLOAT2(x, y += step));
-	ocean_timeScaleSlider->SetValue(wiScene::GetScene().weather.oceanParameters.time_scale);
+	ocean_timeScaleSlider->SetValue(wiScene::GetScene().weather->oceanParameters.time_scale);
 	ocean_timeScaleSlider->SetTooltip("Adjust simulation speed");
 	ocean_timeScaleSlider->OnSlide([&](wiEventArgs args) {
 		if (wiScene::GetScene().weathers.GetCount() > 0)

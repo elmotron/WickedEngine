@@ -26,7 +26,9 @@ namespace wiScene
 	struct SoundComponent;
 	struct InverseKinematicsComponent;
 	struct SpringComponent;
-	struct Scene;
+	struct FlexiBoneChainComponent;
+	
+	class Scene;
 
 	class wiEmittedParticle; // todo: rename
 	class wiHairParticle; // todo: rename

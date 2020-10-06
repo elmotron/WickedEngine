@@ -1206,6 +1206,24 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)Utility\xatlas.h">
       <Filter>UTILITY</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SceneAnimation.h">
+      <Filter>ENGINE\System</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SceneAudio.h">
+      <Filter>ENGINE\System</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SceneGraphics.h">
+      <Filter>ENGINE\System</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SceneHierarchy.h">
+      <Filter>ENGINE\System</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)SceneMisc.h">
+      <Filter>ENGINE\System</Filter>
+    </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScenePhysics.h">
+      <Filter>ENGINE\System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)LUA\lapi.c">
@@ -2002,6 +2020,24 @@
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Utility\xatlas.cpp">
       <Filter>UTILITY</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)SceneAnimation.cpp">
+      <Filter>ENGINE\System</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)SceneAudio.cpp">
+      <Filter>ENGINE\System</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)SceneGraphics.cpp">
+      <Filter>ENGINE\System</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)SceneHierarchy.cpp">
+      <Filter>ENGINE\System</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)SceneMisc.cpp">
+      <Filter>ENGINE\System</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScenePhysics.cpp">
+      <Filter>ENGINE\System</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

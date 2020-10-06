@@ -3100,9 +3100,9 @@ void BindEnvironmentTextures(SHADERSTAGE stage, CommandList cmd)
 	device->BindResource(stage, &textures[TEXTYPE_CUBEARRAY_ENVMAPARRAY], TEXSLOT_ENVMAPARRAY, cmd);
 	device->BindResource(stage, GetVoxelRadianceSecondaryBounceEnabled() ? &textures[TEXTYPE_3D_VOXELRADIANCE_HELPER] : &textures[TEXTYPE_3D_VOXELRADIANCE], TEXSLOT_VOXELRADIANCE, cmd);
 
-	if (GetScene().weather.skyMap != nullptr)
+	if (GetScene().weather->skyMap != nullptr)
 	{
-		device->BindResource(stage, GetScene().weather.skyMap->texture, TEXSLOT_GLOBALENVMAP, cmd);
+		device->BindResource(stage, GetScene().weather->skyMap->texture, TEXSLOT_GLOBALENVMAP, cmd);
 	}
 }
 
@@ -4174,15 +4174,15 @@ void UpdatePerFrameData(float dt, uint32_t layerMask)
 	}
 
 	// Ocean will override any current reflectors
-	if (scene.weather.IsOceanEnabled())
+	if (scene.weather->IsOceanEnabled())
 	{
 		requestReflectionRendering = true; 
-		XMVECTOR _refPlane = XMPlaneFromPointNormal(XMVectorSet(0, scene.weather.oceanParameters.waterHeight, 0, 0), XMVectorSet(0, 1, 0, 0));
+		XMVECTOR _refPlane = XMPlaneFromPointNormal(XMVectorSet(0, scene.weather->oceanParameters.waterHeight, 0, 0), XMVectorSet(0, 1, 0, 0));
 		XMStoreFloat4(&waterPlane, _refPlane);
 
 		if (ocean == nullptr)
 		{
-			ocean = std::make_unique<wiOcean>(scene.weather);
+			ocean = std::make_unique<wiOcean>(*scene.weather);
 		}
 	}
 	else if (ocean != nullptr)
@@ -4624,10 +4624,10 @@ void UpdateRenderData(CommandList cmd)
 	}
 
 	// Compute water simulation:
-	if (scene.weather.IsOceanEnabled() && ocean != nullptr)
+	if (scene.weather->IsOceanEnabled() && ocean != nullptr)
 	{
 		range = wiProfiler::BeginRangeGPU("Ocean - Simulate", cmd);
-		ocean->UpdateDisplacementMap(scene.weather, renderTime, cmd);
+		ocean->UpdateDisplacementMap(*scene.weather, renderTime, cmd);
 		wiProfiler::EndRange(range);
 	}
 
@@ -5800,7 +5800,7 @@ void DrawScene(
 		}
 		if (ocean != nullptr)
 		{
-			ocean->Render(camera, scene.weather, renderTime, cmd);
+			ocean->Render(camera, *scene.weather, renderTime, cmd);
 		}
 	}
 	else
@@ -6957,10 +6957,10 @@ void DrawSky(CommandList cmd)
 
 	device->EventBegin("DrawSky", cmd);
 	
-	if (scene.weather.skyMap != nullptr)
+	if (scene.weather->skyMap != nullptr)
 	{
 		device->BindPipelineState(&PSO_sky[SKYRENDERING_STATIC], cmd);
-		device->BindResource(PS, scene.weather.skyMap->texture, TEXSLOT_GLOBALENVMAP, cmd);
+		device->BindResource(PS, scene.weather->skyMap->texture, TEXSLOT_GLOBALENVMAP, cmd);
 	}
 	else
 	{
@@ -7282,10 +7282,10 @@ void RefreshEnvProbes(CommandList cmd)
 
 		// sky
 		{
-			if (scene.weather.skyMap != nullptr)
+			if (scene.weather->skyMap != nullptr)
 			{
 				device->BindPipelineState(&PSO_sky[SKYRENDERING_ENVMAPCAPTURE_STATIC], cmd);
-				device->BindResource(PS, scene.weather.skyMap->texture, TEXSLOT_ONDEMAND0, cmd);
+				device->BindResource(PS, scene.weather->skyMap->texture, TEXSLOT_ONDEMAND0, cmd);
 			}
 			else
 			{
@@ -8447,9 +8447,9 @@ void RayTraceScene(
 	// Set up tracing resources:
 	sceneBVH.Bind(CS, cmd);
 
-	if (scene.weather.skyMap != nullptr)
+	if (scene.weather->skyMap != nullptr)
 	{
-		device->BindResource(CS, scene.weather.skyMap->texture, TEXSLOT_GLOBALENVMAP, cmd);
+		device->BindResource(CS, scene.weather->skyMap->texture, TEXSLOT_GLOBALENVMAP, cmd);
 	}
 
 	const XMFLOAT4& halton = wiMath::GetHaltonSequence((int)GetDevice()->GetFrameCount());
@@ -9132,17 +9132,17 @@ void UpdateFrameCB(CommandList cmd)
 	cb.g_xFrame_InternalResolution = float2((float)GetInternalResolution().x, (float)GetInternalResolution().y);
 	cb.g_xFrame_InternalResolution_rcp = float2(1.0f / cb.g_xFrame_InternalResolution.x, 1.0f / cb.g_xFrame_InternalResolution.y);
 	cb.g_xFrame_Gamma = GetGamma();
-	cb.g_xFrame_SunColor = scene.weather.sunColor;
-	cb.g_xFrame_SunDirection = scene.weather.sunDirection;
-	cb.g_xFrame_SunEnergy = scene.weather.sunEnergy;
+	cb.g_xFrame_SunColor = scene.weather->sunColor;
+	cb.g_xFrame_SunDirection = scene.weather->sunDirection;
+	cb.g_xFrame_SunEnergy = scene.weather->sunEnergy;
 	cb.g_xFrame_ShadowCascadeCount = CASCADE_COUNT;
-	cb.g_xFrame_Ambient = scene.weather.ambient;
-	cb.g_xFrame_Cloudiness = scene.weather.cloudiness;
-	cb.g_xFrame_CloudScale = scene.weather.cloudScale;
-	cb.g_xFrame_CloudSpeed = scene.weather.cloudSpeed;
-	cb.g_xFrame_Fog = float3(scene.weather.fogStart, scene.weather.fogEnd, scene.weather.fogHeight);
-	cb.g_xFrame_Horizon = scene.weather.horizon;
-	cb.g_xFrame_Zenith = scene.weather.zenith;
+	cb.g_xFrame_Ambient = scene.weather->ambient;
+	cb.g_xFrame_Cloudiness = scene.weather->cloudiness;
+	cb.g_xFrame_CloudScale = scene.weather->cloudScale;
+	cb.g_xFrame_CloudSpeed = scene.weather->cloudSpeed;
+	cb.g_xFrame_Fog = float3(scene.weather->fogStart, scene.weather->fogEnd, scene.weather->fogHeight);
+	cb.g_xFrame_Horizon = scene.weather->horizon;
+	cb.g_xFrame_Zenith = scene.weather->zenith;
 	cb.g_xFrame_VoxelRadianceMaxDistance = voxelSceneData.maxDistance;
 	cb.g_xFrame_VoxelRadianceDataSize = voxelSceneData.voxelsize;
 	cb.g_xFrame_VoxelRadianceDataSize_rcp = 1.0f / (float)cb.g_xFrame_VoxelRadianceDataSize;
@@ -9178,14 +9178,14 @@ void UpdateFrameCB(CommandList cmd)
 	cb.g_xFrame_ForceFieldArrayCount = entityArrayCount_ForceFields;
 	cb.g_xFrame_EnvProbeArrayOffset = entityArrayOffset_EnvProbes;
 	cb.g_xFrame_EnvProbeArrayCount = entityArrayCount_EnvProbes;
-	cb.g_xFrame_WindSpeed = scene.weather.windSpeed;
-	cb.g_xFrame_WindRandomness = scene.weather.windRandomness;
-	cb.g_xFrame_WindWaveSize = scene.weather.windWaveSize;
-	cb.g_xFrame_WindDirection = scene.weather.windDirection;
+	cb.g_xFrame_WindSpeed = scene.weather->windSpeed;
+	cb.g_xFrame_WindRandomness = scene.weather->windRandomness;
+	cb.g_xFrame_WindWaveSize = scene.weather->windWaveSize;
+	cb.g_xFrame_WindDirection = scene.weather->windDirection;
 	cb.g_xFrame_StaticSkyGamma = 0.0f;
-	if (scene.weather.skyMap != nullptr)
+	if (scene.weather->skyMap != nullptr)
 	{
-		bool hdr = !GetDevice()->IsFormatUnorm(scene.weather.skyMap->texture->GetDesc().Format);
+		bool hdr = !GetDevice()->IsFormatUnorm(scene.weather->skyMap->texture->GetDesc().Format);
 		cb.g_xFrame_StaticSkyGamma = hdr ? 1.0f : cb.g_xFrame_Gamma;
 	}
 	cb.g_xFrame_FrameCount = (uint)GetDevice()->GetFrameCount();
@@ -9253,7 +9253,7 @@ void UpdateFrameCB(CommandList cmd)
 	{
 		cb.g_xFrame_Options |= OPTION_BIT_VOXELGI_RETARGETTED;
 	}
-	if (scene.weather.IsSimpleSky())
+	if (scene.weather->IsSimpleSky())
 	{
 		cb.g_xFrame_Options |= OPTION_BIT_SIMPLE_SKY;
 	}
@@ -12577,7 +12577,7 @@ bool IsRequestedReflectionRendering() { return requestReflectionRendering; }
 bool IsRequestedVolumetricLightRendering() { return requestVolumetricLightRendering; }
 void SetGameSpeed(float value) { GameSpeed = std::max(0.0f, value); }
 float GetGameSpeed() { return GameSpeed; }
-void OceanRegenerate() { if (ocean != nullptr) ocean = std::make_unique<wiOcean>(GetScene().weather); }
+void OceanRegenerate() { if (ocean != nullptr) ocean = std::make_unique<wiOcean>(*GetScene().weather); }
 void InvalidateBVH() { scene_bvh_invalid = true; }
 void SetRaytraceBounceCount(uint32_t bounces)
 {

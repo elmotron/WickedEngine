@@ -36,7 +36,7 @@ namespace wiInitializer
 		wiJobSystem::Execute(ctx, [](wiJobArgs args) { wiOcean::Initialize(); });
 		wiJobSystem::Execute(ctx, [](wiJobArgs args) { wiGPUSortLib::Initialize(); });
 		wiJobSystem::Execute(ctx, [](wiJobArgs args) { wiGPUBVH::Initialize(); });
-		wiJobSystem::Execute(ctx, [](wiJobArgs args) { wiPhysicsEngine::Initialize(); });
+//		wiJobSystem::Execute(ctx, [](wiJobArgs args) { wiPhysicsEngine::Initialize(); });
 
 		// Initialize this immediately:
 		wiLua::Initialize();

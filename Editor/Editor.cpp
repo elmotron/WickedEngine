@@ -736,7 +736,7 @@ void EditorComponent::Load()
 
 					if (!extension.compare("WISCENE")) // engine-serialized
 					{
-						wiScene::LoadModel(fileName);
+						wiScene::LoadModel(fileName, wiScene::GetScene());
 					}
 					else if (!extension.compare("OBJ")) // wavefront-obj
 					{
@@ -893,9 +893,9 @@ void EditorComponent::Load()
 	physicsEnabledCheckBox = new wiCheckBox("Physics Enabled: ");
 	physicsEnabledCheckBox->SetTooltip("Toggle Physics Engine On/Off");
 	physicsEnabledCheckBox->OnClick([&](wiEventArgs args) {
-		wiPhysicsEngine::SetEnabled(args.bValue);
+//		wiPhysicsEngine::SetEnabled(args.bValue);
 	});
-	physicsEnabledCheckBox->SetCheck(wiPhysicsEngine::IsEnabled());
+	physicsEnabledCheckBox->SetCheck(true);//wiPhysicsEngine::IsEnabled());
 	GetGUI().AddWidget(physicsEnabledCheckBox);
 
 	cinemaModeCheckBox = new wiCheckBox("Cinema Mode: ");
@@ -1251,7 +1251,7 @@ void EditorComponent::Update(float dt)
 			// Try to pick objects-meshes:
 			if (pickMask & PICK_OBJECT)
 			{
-				hovered = wiScene::Pick(pickRay, pickMask);
+				hovered = wiScene::GetScene().PickObject(pickRay, pickMask);
 			}
 
 			if (pickMask & PICK_LIGHT)

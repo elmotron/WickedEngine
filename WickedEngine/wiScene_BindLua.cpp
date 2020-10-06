@@ -51,7 +51,7 @@ int LoadModel(lua_State* L)
 						wiLua::SError(L, "LoadModel(Scene scene, string fileName, opt Matrix transform) argument is not a matrix!");
 					}
 				}
-				Entity root = wiScene::LoadModel(*custom_scene->scene, fileName, transform, true);
+				Entity root = wiScene::LoadModel(fileName, *custom_scene->scene, transform, true);
 				wiLua::SSetLongLong(L, root);
 				return 1;
 			}
@@ -78,7 +78,7 @@ int LoadModel(lua_State* L)
 					wiLua::SError(L, "LoadModel(string fileName, opt Matrix transform) argument is not a matrix!");
 				}
 			}
-			Entity root = wiScene::LoadModel(fileName, transform, true);
+			Entity root = wiScene::LoadModel(fileName, wiScene::GetScene(), transform, true);
 			wiLua::SSetLongLong(L, root);
 			return 1;
 		}
@@ -122,7 +122,7 @@ int Pick(lua_State* L)
 					}
 				}
 			}
-			auto pick = wiScene::Pick(ray->ray, renderTypeMask, layerMask, *scene);
+			auto pick = scene->PickObject(ray->ray, renderTypeMask, layerMask);
 			wiLua::SSetLongLong(L, pick.entity);
 			Luna<Vector_BindLua>::push(L, new Vector_BindLua(XMLoadFloat3(&pick.position)));
 			Luna<Vector_BindLua>::push(L, new Vector_BindLua(XMLoadFloat3(&pick.normal)));
@@ -172,7 +172,7 @@ int SceneIntersectSphere(lua_State* L)
 					}
 				}
 			}
-			auto pick = wiScene::SceneIntersectSphere(sphere->sphere, renderTypeMask, layerMask, *scene);
+			auto pick = scene->IntersectSphere(sphere->sphere, renderTypeMask, layerMask);
 			wiLua::SSetLongLong(L, pick.entity);
 			Luna<Vector_BindLua>::push(L, new Vector_BindLua(XMLoadFloat3(&pick.position)));
 			Luna<Vector_BindLua>::push(L, new Vector_BindLua(XMLoadFloat3(&pick.normal)));
@@ -222,7 +222,7 @@ int SceneIntersectCapsule(lua_State* L)
 					}
 				}
 			}
-			auto pick = wiScene::SceneIntersectCapsule(capsule->capsule, renderTypeMask, layerMask, *scene);
+			auto pick = scene->IntersectCapsule(capsule->capsule, renderTypeMask, layerMask);
 			wiLua::SSetLongLong(L, pick.entity);
 			Luna<Vector_BindLua>::push(L, new Vector_BindLua(XMLoadFloat3(&pick.position)));
 			Luna<Vector_BindLua>::push(L, new Vector_BindLua(XMLoadFloat3(&pick.normal)));

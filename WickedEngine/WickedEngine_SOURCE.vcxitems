@@ -234,6 +234,12 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)RenderPath3D_Deferred_BindLua.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RenderPath3D_Forward.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)RenderPath3D_Forward_BindLua.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SceneAnimation.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SceneAudio.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SceneGraphics.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SceneHierarchy.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)SceneMisc.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)ScenePhysics.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ShaderInterop_BVH.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ShaderInterop_Font.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)ShaderInterop_HairParticle.h" />
@@ -547,6 +553,12 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)RenderPath3D_TiledDeferred_BindLua.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RenderPath3D_TiledForward.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)RenderPath3D_TiledForward_BindLua.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SceneAnimation.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SceneAudio.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SceneGraphics.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SceneHierarchy.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)SceneMisc.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)ScenePhysics.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Utility\D3D12MemAlloc.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Utility\spirv_cfg.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Utility\spirv_cpp.cpp" />
