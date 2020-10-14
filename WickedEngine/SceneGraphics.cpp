@@ -349,8 +349,7 @@ void wiScene::MeshComponent::CreateRenderData()
 	// vertexBuffer_PRE will be created on demand later!
 	vertexBuffer_PRE = GPUBuffer();
 
-
-	if (wiRenderer::GetDevice()->CheckCapability(GraphicsDevice::GRAPHICSDEVICE_CAPABILITY_RAYTRACING))
+	if (wiRenderer::GetDevice()->CheckCapability(GRAPHICSDEVICE_CAPABILITY_RAYTRACING))
 	{
 		BLAS_build_pending = true;
 

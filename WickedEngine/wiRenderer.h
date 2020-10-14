@@ -243,6 +243,14 @@ namespace wiRenderer
 		uint32_t samplecount = 16,
 		float power = 2.0f
 	);
+	void Postprocess_RTReflection(
+		const wiGraphics::Texture& depthbuffer,
+		const wiGraphics::Texture& gbuffer1,
+		const wiGraphics::Texture& gbuffer2,
+		const wiGraphics::Texture& output,
+		wiGraphics::CommandList cmd,
+		float range = 1000.0f
+	);
 	void Postprocess_SSR(
 		const wiGraphics::Texture& input,
 		const wiGraphics::Texture& depthbuffer,
@@ -357,6 +365,11 @@ namespace wiRenderer
 	);
 	void Postprocess_Downsample4x(
 		const wiGraphics::Texture& input,
+		const wiGraphics::Texture& output,
+		wiGraphics::CommandList cmd
+	);
+	void Postprocess_NormalsFromDepth(
+		const wiGraphics::Texture& depthbuffer,
 		const wiGraphics::Texture& output,
 		wiGraphics::CommandList cmd
 	);
@@ -584,6 +597,7 @@ namespace wiRenderer
 		uint32_t uvset = 0;
 		float radius = 0;
 		XMUINT2 center;
+		XMUINT2 dimensions;
 	};
 	void DrawPaintRadius(const PaintRadius& paintrad);
 

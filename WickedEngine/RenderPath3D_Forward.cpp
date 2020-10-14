@@ -212,7 +212,7 @@ void RenderPath3D_Forward::Render() const
 		GraphicsDevice* device = wiRenderer::GetDevice();
 		wiRenderer::UpdateCameraCB(wiRenderer::GetCamera(), cmd);
 
-		if (wiRenderer::GetVariableRateShadingClassification() && device->CheckCapability(GraphicsDevice::GRAPHICSDEVICE_CAPABILITY_VARIABLE_RATE_SHADING_TIER2))
+		if (wiRenderer::GetVariableRateShadingClassification() && device->CheckCapability(GRAPHICSDEVICE_CAPABILITY_VARIABLE_RATE_SHADING_TIER2))
 		{
 			wiRenderer::ComputeShadingRateClassification(*GetSceneRT_Read(1), rtLinearDepth, rtShadingRate, cmd);
 			device->BindShadingRate(SHADING_RATE_1X1, cmd);
@@ -232,7 +232,7 @@ void RenderPath3D_Forward::Render() const
 
 			device->BindResource(PS, getReflectionsEnabled() ? &rtReflection : wiTextureHelper::getTransparent(), TEXSLOT_RENDERPATH_REFLECTION, cmd);
 			device->BindResource(PS, getAOEnabled() ? &rtAO : wiTextureHelper::getWhite(), TEXSLOT_RENDERPATH_AO, cmd);
-			device->BindResource(PS, getSSREnabled() ? &rtSSR : wiTextureHelper::getTransparent(), TEXSLOT_RENDERPATH_SSR, cmd);
+			device->BindResource(PS, getSSREnabled() || getRaytracedReflectionEnabled() ? &rtSSR : wiTextureHelper::getTransparent(), TEXSLOT_RENDERPATH_SSR, cmd);
 			wiRenderer::DrawScene(wiRenderer::GetCamera(), RENDERPASS_FORWARD, cmd, drawscene_flags);
 			wiRenderer::DrawSky(cmd);
 

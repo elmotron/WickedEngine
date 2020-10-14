@@ -2,7 +2,7 @@
 
 #if __has_include("d3d11_3.h")
 #define WICKEDENGINE_BUILD_DX11
-#endif // HAS VULKAN
+#endif // HAS DX11
 
 #ifdef WICKEDENGINE_BUILD_DX11
 #include "CommonInclude.h"
@@ -93,6 +93,7 @@ namespace wiGraphics
 		bool CreateRenderPass(const RenderPassDesc* pDesc, RenderPass* renderpass) override;
 
 		int CreateSubresource(Texture* texture, SUBRESOURCE_TYPE type, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount) override;
+		int CreateSubresource(GPUBuffer* buffer, SUBRESOURCE_TYPE type, uint64_t offset, uint64_t size = ~0) override;
 
 		void Map(const GPUResource* resource, Mapping* mapping) override;
 		void Unmap(const GPUResource* resource) override;

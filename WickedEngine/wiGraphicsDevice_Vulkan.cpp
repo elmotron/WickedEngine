@@ -20,6 +20,11 @@
 #include <set>
 #include <algorithm>
 
+#ifdef SDL2
+#include <SDL2/SDL_vulkan.h>
+#include "sdl2.h"
+#endif
+
 // Enabling ray tracing might crash RenderDoc:
 #define ENABLE_RAYTRACING_EXTENSION
 
@@ -604,10 +609,12 @@ namespace Vulkan_Internal
 	};
 	bool checkValidationLayerSupport() {
 		uint32_t layerCount;
-		vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+		VkResult res = vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+		assert(res == VK_SUCCESS);
 
 		std::vector<VkLayerProperties> availableLayers(layerCount);
-		vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+		res = vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+        assert(res == VK_SUCCESS);
 
 		for (const char* layerName : validationLayers) {
 			bool layerFound = false;
@@ -639,8 +646,10 @@ namespace Vulkan_Internal
 		std::stringstream ss("");
 		ss << "[VULKAN validation layer]: " << msg << std::endl;
 
-		std::cerr << ss.str();
+		std::clog << ss.str();
+#ifdef _WIN32
 		OutputDebugStringA(ss.str().c_str());
+#endif
 
 		return VK_FALSE;
 	}
@@ -673,7 +682,9 @@ namespace Vulkan_Internal
 		int i = 0;
 		for (const auto& queueFamily : queueFamilies) {
 			VkBool32 presentSupport = false;
-			vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+			VkResult res = vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+			assert(res == VK_SUCCESS);
+
 			if (indices.presentFamily < 0 && queueFamily.queueCount > 0 && presentSupport) {
 				indices.presentFamily = i;
 			}
@@ -701,22 +712,27 @@ namespace Vulkan_Internal
 	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface) {
 		SwapChainSupportDetails details;
 
-		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
+		VkResult res = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
+		assert(res == VK_SUCCESS);
 
 		uint32_t formatCount;
-		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
+		res = vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
+		assert(res == VK_SUCCESS);
 
 		if (formatCount != 0) {
 			details.formats.resize(formatCount);
-			vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
+			res = vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
+			assert(res == VK_SUCCESS);
 		}
 
 		uint32_t presentModeCount;
-		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
+		res = vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
+		assert(res == VK_SUCCESS);
 
 		if (presentModeCount != 0) {
 			details.presentModes.resize(presentModeCount);
-			vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentModes.data());
+			res = vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentModes.data());
+			assert(res == VK_SUCCESS);
 		}
 
 		return details;
@@ -750,9 +766,11 @@ namespace Vulkan_Internal
 		}
 
 		uint32_t extensionCount;
-		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+		VkResult res = vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+		assert(res == VK_SUCCESS);
 		std::vector<VkExtensionProperties> available(extensionCount);
-		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, available.data());
+		res = vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, available.data());
+		assert(res == VK_SUCCESS);
 
 		for (auto& x : required_deviceExtensions)
 		{
@@ -1252,7 +1270,8 @@ using namespace Vulkan_Internal;
 
 		if (descriptorPool != VK_NULL_HANDLE)
 		{
-			vkResetDescriptorPool(device->device, descriptorPool, 0);
+			VkResult res = vkResetDescriptorPool(device->device, descriptorPool, 0);
+			assert(res == VK_SUCCESS);
 		}
 
 		memset(CBV, 0, sizeof(CBV));
@@ -2165,6 +2184,11 @@ using namespace Vulkan_Internal;
 		GetClientRect(window, &rect);
 		RESOLUTIONWIDTH = rect.right - rect.left;
 		RESOLUTIONHEIGHT = rect.bottom - rect.top;
+#elif SDL2
+		int width, height;
+		SDL_GetWindowSize(window, &width, &height);
+		RESOLUTIONWIDTH = width;
+		RESOLUTIONHEIGHT = height;
 #endif // _WIN32
 
 		VkResult res;
@@ -2181,15 +2205,27 @@ using namespace Vulkan_Internal;
 
 		// Enumerate available extensions:
 		uint32_t extensionCount = 0;
-		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+		res = vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+		assert(res == VK_SUCCESS);
 		std::vector<VkExtensionProperties> extensions(extensionCount);
-		vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+		res = vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions.data());
+		assert(res == VK_SUCCESS);
 
 		std::vector<const char*> extensionNames;
 		extensionNames.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
 		extensionNames.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #ifdef _WIN32
 		extensionNames.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+#elif SDL2
+        {
+            uint32_t extensionCount;
+            SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, nullptr);
+            std::vector<const char *> extensionNames_sdl(extensionCount);
+            SDL_Vulkan_GetInstanceExtensions(window, &extensionCount, extensionNames_sdl.data());
+            extensionNames.reserve(extensionNames.size() + extensionNames_sdl.size());
+            extensionNames.insert(extensionNames.begin(),
+                    extensionNames_sdl.cbegin(), extensionNames_sdl.cend());
+        }
 #endif // _WIN32
 
 		bool enableValidationLayers = debuglayer;
@@ -2245,6 +2281,11 @@ using namespace Vulkan_Internal;
 			if (!CreateWin32SurfaceKHR || CreateWin32SurfaceKHR(instance, &createInfo, nullptr, &surface) != VK_SUCCESS) {
 				assert(0);
 			}
+#elif SDL2
+			if (!SDL_Vulkan_CreateSurface(window, instance, &surface))
+			{
+				throw sdl2::SDLError("Error creating a vulkan surface");
+			}
 #else
 #error WICKEDENGINE VULKAN DEVICE ERROR: PLATFORM NOT SUPPORTED
 #endif // _WIN32
@@ -2254,7 +2295,8 @@ using namespace Vulkan_Internal;
 		// Enumerating and creating devices:
 		{
 			uint32_t deviceCount = 0;
-			vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+			VkResult res = vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
+			assert(res == VK_SUCCESS);
 
 			if (deviceCount == 0) {
 				wiHelper::messageBox("failed to find GPUs with Vulkan support!");
@@ -2262,7 +2304,8 @@ using namespace Vulkan_Internal;
 			}
 
 			std::vector<VkPhysicalDevice> devices(deviceCount);
-			vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+			res = vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
+			assert(res == VK_SUCCESS);
 
 			device_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
 			device_properties_1_1.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_PROPERTIES;
@@ -2316,9 +2359,11 @@ using namespace Vulkan_Internal;
 
 
 			std::vector<const char*> enabled_deviceExtensions = required_deviceExtensions;
-			vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
+			res = vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, nullptr);
+			assert(res == VK_SUCCESS);
 			std::vector<VkExtensionProperties> available_deviceExtensions(extensionCount);
-			vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, available_deviceExtensions.data());
+			res = vkEnumerateDeviceExtensionProperties(physicalDevice, nullptr, &extensionCount, available_deviceExtensions.data());
+			assert(res == VK_SUCCESS);
 
 			if (checkDeviceExtensionSupport(VK_KHR_SPIRV_1_4_EXTENSION_NAME, available_deviceExtensions))
 			{
@@ -2380,7 +2425,7 @@ using namespace Vulkan_Internal;
 
 			if (mesh_shader_features.meshShader == VK_TRUE && mesh_shader_features.taskShader == VK_TRUE)
 			{
-				// Currently, creating pipeline state with mesh shader crashes nvidia driver for me, so disable until solved
+				// Enable mesh shader here (problematic with certain driver versions, disabled by default): 
 				//MESH_SHADER = true;
 			}
 			
@@ -2469,7 +2514,8 @@ using namespace Vulkan_Internal;
 					VkFenceCreateInfo fenceInfo = {};
 					fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 					//fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-					vkCreateFence(device, &fenceInfo, nullptr, &frames[fr].frameFence);
+					VkResult res = vkCreateFence(device, &fenceInfo, nullptr, &frames[fr].frameFence);
+					assert(res == VK_SUCCESS);
 				}
 
 				// Create resources for transition command buffer:
@@ -2735,8 +2781,10 @@ using namespace Vulkan_Internal;
 	}
 	GraphicsDevice_Vulkan::~GraphicsDevice_Vulkan()
 	{
-		vkQueueWaitIdle(graphicsQueue);
-		vkQueueWaitIdle(presentQueue);
+		VkResult res = vkQueueWaitIdle(graphicsQueue);
+		assert(res == VK_SUCCESS);
+		res = vkQueueWaitIdle(presentQueue);
+		assert(res == VK_SUCCESS);
 
 		for (auto& frame : frames)
 		{
@@ -2878,10 +2926,12 @@ using namespace Vulkan_Internal;
 			vkDestroySwapchainKHR(device, createInfo.oldSwapchain, nullptr);
 		}
 
-		vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
+		res = vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
+		assert(res == VK_SUCCESS);
 		assert(BACKBUFFER_COUNT <= imageCount);
 		swapChainImages.resize(imageCount);
-		vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
+		res = vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
+		assert(res == VK_SUCCESS);
 		swapChainImageFormat = surfaceFormat.format;
 
 		VkDebugUtilsObjectNameInfoEXT info = {};
@@ -3223,33 +3273,14 @@ using namespace Vulkan_Internal;
 		}
 
 
-
-		if (pDesc->BindFlags & BIND_SHADER_RESOURCE && pBuffer->desc.Format != FORMAT_UNKNOWN)
+		// Create resource views if needed
+		if (pDesc->BindFlags & BIND_SHADER_RESOURCE)
 		{
-			VkBufferViewCreateInfo srv_desc = {};
-			srv_desc.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
-			srv_desc.buffer = internal_state->resource;
-			srv_desc.flags = 0;
-			srv_desc.format = _ConvertFormat(pBuffer->desc.Format);
-			srv_desc.offset = 0;
-			srv_desc.range = pBuffer->desc.ByteWidth;
-
-			res = vkCreateBufferView(device, &srv_desc, nullptr, &internal_state->srv);
-			assert(res == VK_SUCCESS);
+			CreateSubresource(pBuffer, SRV, 0);
 		}
-
-		if (pDesc->BindFlags & BIND_UNORDERED_ACCESS && pBuffer->desc.Format != FORMAT_UNKNOWN)
+		if (pDesc->BindFlags & BIND_UNORDERED_ACCESS)
 		{
-			VkBufferViewCreateInfo uav_desc = {};
-			uav_desc.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
-			uav_desc.buffer = internal_state->resource;
-			uav_desc.flags = 0;
-			uav_desc.format = _ConvertFormat(pBuffer->desc.Format);
-			uav_desc.offset = 0;
-			uav_desc.range = pBuffer->desc.ByteWidth;
-
-			res = vkCreateBufferView(device, &uav_desc, nullptr, &internal_state->uav);
-			assert(res == VK_SUCCESS);
+			CreateSubresource(pBuffer, UAV, 0);
 		}
 
 
@@ -3267,7 +3298,7 @@ using namespace Vulkan_Internal;
 
 		if (pTexture->desc.MipLevels == 0)
 		{
-			pTexture->desc.MipLevels = static_cast<uint32_t>(log2(std::max(pTexture->desc.Width, pTexture->desc.Height)));
+			pTexture->desc.MipLevels = (uint32_t)log2(std::max(pTexture->desc.Width, pTexture->desc.Height)) + 1;
 		}
 
 		VmaAllocationCreateInfo allocInfo = {};
@@ -5139,6 +5170,68 @@ using namespace Vulkan_Internal;
 		}
 		return -1;
 	}
+	int GraphicsDevice_Vulkan::CreateSubresource(GPUBuffer* buffer, SUBRESOURCE_TYPE type, uint64_t offset, uint64_t size)
+	{
+		auto internal_state = to_internal(buffer);
+		const GPUBufferDesc& desc = buffer->GetDesc();
+		VkResult res;
+
+		switch (type)
+		{
+		case wiGraphics::SRV:
+		case wiGraphics::UAV:
+		{
+			if (desc.Format == FORMAT_UNKNOWN)
+			{
+				return -1;
+			}
+
+			VkBufferViewCreateInfo srv_desc = {};
+			srv_desc.sType = VK_STRUCTURE_TYPE_BUFFER_VIEW_CREATE_INFO;
+			srv_desc.buffer = internal_state->resource;
+			srv_desc.flags = 0;
+			srv_desc.format = _ConvertFormat(desc.Format);
+			srv_desc.offset = Align(offset, device_properties.properties.limits.minTexelBufferOffsetAlignment); // damn, if this needs alignment, that could break a lot of things! (index buffer, index offset?)
+			srv_desc.range = std::min(size, (uint64_t)desc.ByteWidth - srv_desc.offset);
+
+			VkBufferView view;
+			res = vkCreateBufferView(device, &srv_desc, nullptr, &view);
+
+			if (res == VK_SUCCESS)
+			{
+				if (type == SRV)
+				{
+					if (internal_state->srv == VK_NULL_HANDLE)
+					{
+						internal_state->srv = view;
+						return -1;
+					}
+					internal_state->subresources_srv.push_back(view);
+					return int(internal_state->subresources_srv.size() - 1);
+				}
+				else
+				{
+					if (internal_state->uav == VK_NULL_HANDLE)
+					{
+						internal_state->uav = view;
+						return -1;
+					}
+					internal_state->subresources_uav.push_back(view);
+					return int(internal_state->subresources_uav.size() - 1);
+				}
+			}
+			else
+			{
+				assert(0);
+			}
+		}
+		break;
+		default:
+			assert(0);
+			break;
+		}
+		return -1;
+	}
 
 	void GraphicsDevice_Vulkan::WriteTopLevelAccelerationStructureInstance(const RaytracingAccelerationStructureDesc::TopLevel::Instance* instance, void* dest)
 	{
@@ -5200,7 +5293,7 @@ using namespace Vulkan_Internal;
 			{
 				const GPUBuffer* buffer = (const GPUBuffer*)resource;
 				auto internal_state = to_internal(buffer);
-				descriptor.bufferView = internal_state->srv;
+				descriptor.bufferView = subresource < 0 ? internal_state->srv : internal_state->subresources_srv[subresource];
 			}
 			else
 			{
@@ -5315,7 +5408,7 @@ using namespace Vulkan_Internal;
 			{
 				const GPUBuffer* buffer = (const GPUBuffer*)resource;
 				auto internal_state = to_internal(buffer);
-				descriptor.bufferView = internal_state->uav;
+				descriptor.bufferView = subresource < 0 ? internal_state->uav : internal_state->subresources_uav[subresource];
 			}
 			else
 			{
@@ -5518,7 +5611,8 @@ using namespace Vulkan_Internal;
 	{
 		VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 
-		vkAcquireNextImageKHR(device, swapChain, 0xFFFFFFFFFFFFFFFF, imageAvailableSemaphore, VK_NULL_HANDLE, &swapChainImageIndex);
+		VkResult res = vkAcquireNextImageKHR(device, swapChain, 0xFFFFFFFFFFFFFFFF, imageAvailableSemaphore, VK_NULL_HANDLE, &swapChainImageIndex);
+		assert(res == VK_SUCCESS);
 
 		VkRenderPassBeginInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -5550,7 +5644,8 @@ using namespace Vulkan_Internal;
 		presentInfo.pImageIndices = &swapChainImageIndex;
 		presentInfo.pResults = nullptr; // Optional
 
-		vkQueuePresentKHR(presentQueue, &presentInfo);
+		VkResult res = vkQueuePresentKHR(presentQueue, &presentInfo);
+		assert(res == VK_SUCCESS);
 	}
 
 	CommandList GraphicsDevice_Vulkan::BeginCommandList()
@@ -5810,7 +5905,8 @@ using namespace Vulkan_Internal;
 
 	void GraphicsDevice_Vulkan::WaitForGPU()
 	{
-		vkQueueWaitIdle(graphicsQueue);
+		VkResult res = vkQueueWaitIdle(graphicsQueue);
+		assert(res == VK_SUCCESS);
 	}
 	void GraphicsDevice_Vulkan::ClearPipelineStateCache()
 	{

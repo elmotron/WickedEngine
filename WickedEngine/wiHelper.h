@@ -102,6 +102,4 @@ namespace wiHelper
 
 	// Spins for the given time and does nothing (OS can not overtake)
 	void Spin(float milliseconds);
-
-
 };

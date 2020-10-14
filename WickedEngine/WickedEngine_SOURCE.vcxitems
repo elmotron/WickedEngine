@@ -148,6 +148,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)wiEnums.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)wiFadeManager.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)wiFont.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)wiSDLInput.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)wiSpriteFont_BindLua.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)wiGraphics.h" />
     <ClInclude Include="$(MSBuildThisFileDirectory)wiGraphicsDevice_DX11.h" />
@@ -217,6 +218,16 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)Utility\spirv_msl.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Utility\spirv_parser.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Utility\spirv_reflect.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)Utility\stb_vorbis.c">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
+    </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)Utility\utility_common.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)Utility\xatlas.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)wiArchive.cpp" />
@@ -350,6 +361,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)wiFadeManager.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)wiFont.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)wiNetwork_Linux.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)wiSDLInput.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)wiSpriteFont_BindLua.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)wiGraphicsDevice_DX11.cpp" />
     <ClCompile Include="$(MSBuildThisFileDirectory)wiGUI.cpp" />

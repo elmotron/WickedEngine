@@ -201,7 +201,7 @@ void RenderPath3D::ResizeBuffers()
 		device->SetName(&rtGUIBlurredBackground[2], "rtGUIBlurredBackground[2]");
 	}
 
-	if(device->CheckCapability(GraphicsDevice::GRAPHICSDEVICE_CAPABILITY_VARIABLE_RATE_SHADING_TIER2))
+	if(device->CheckCapability(GRAPHICSDEVICE_CAPABILITY_VARIABLE_RATE_SHADING_TIER2))
 	{
 		uint32_t tileSize = device->GetVariableRateShadingTileSize();
 
@@ -436,7 +436,7 @@ void RenderPath3D::RenderFrameSetUp(CommandList cmd) const
 	device->BindResource(CS, &depthBuffer_Copy, TEXSLOT_DEPTH, cmd);
 	wiRenderer::UpdateRenderData(cmd);
 
-	if (getAO() == AO_RTAO || wiRenderer::GetRaytracedShadowsEnabled())
+	if (getAO() == AO_RTAO || wiRenderer::GetRaytracedShadowsEnabled() || getRaytracedReflectionEnabled())
 	{
 		wiRenderer::UpdateRaytracingAccelerationStructures(cmd);
 	}
@@ -556,7 +556,11 @@ void RenderPath3D::RenderAO(CommandList cmd) const
 }
 void RenderPath3D::RenderSSR(const Texture& gbuffer1, const Texture& gbuffer2, CommandList cmd) const
 {
-	if (getSSREnabled())
+	if (getRaytracedReflectionEnabled())
+	{
+		wiRenderer::Postprocess_RTReflection(depthBuffer_Copy, gbuffer1, gbuffer2, rtSSR, cmd);
+	}
+	else if (getSSREnabled())
 	{
 		wiRenderer::Postprocess_SSR(rtSceneCopy, depthBuffer_Copy, rtLinearDepth, gbuffer1, gbuffer2, rtSSR, cmd);
 	}

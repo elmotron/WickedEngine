@@ -48,6 +48,29 @@ struct wiScene::Scene::PhysicsEngine
 	void AddSoftBody(Entity entity, wiScene::SoftBodyPhysicsComponent& physicscomponent, const wiScene::MeshComponent& mesh);
 };
 
+namespace BulletUtil
+{
+	btQuaternion toBulletQuaternion(const XMFLOAT4& q)
+	{
+		return btQuaternion(-q.x, -q.y, q.z, q.w);
+	}
+
+	XMFLOAT4 fromBulletQuaternion(const btQuaternion& q)
+	{
+		return XMFLOAT4(-q.x(), -q.y(), q.z(), q.w());
+	}
+
+	btVector3 toBulletTranslation(const XMFLOAT3& v)
+	{
+		return btVector3(v.x, v.y, v.z);
+	}
+
+	XMFLOAT3 fromBulletTranslation(const btVector3& v)
+	{
+		return XMFLOAT3(v.x(), v.y(), -v.z());
+	}
+}
+
 class BulletDebugDrawer : public btIDebugDraw
 {
 public:
@@ -738,12 +761,12 @@ void wiScene::Scene::RunPhysicsUpdateSystem(wiJobSystem::context& ctx, float dt)
 
 				XMVECTOR capsulePosV = XMVectorAdd(parentBonePos, XMVectorScale(boneVec, 0.5f));
 				XMFLOAT3 capsulePos;
-				XMStoreFloat3(&capsulePos, capsulePosV);
+				XMStoreFloat3(&capsulePos, parentBonePos);//capsulePosV);
 
 				XMFLOAT3 position = tmParent->GetPosition();
 				XMFLOAT4 rotation = tmParent->GetRotation();
-				btVector3 T(capsulePos.x, capsulePos.y, capsulePos.z);
-				btQuaternion R(rotation.x, rotation.y, rotation.z, rotation.w);
+				btVector3 T = BulletUtil::toBulletTranslation(capsulePos);
+				btQuaternion R = BulletUtil::toBulletQuaternion(rotation);
 
 				btCapsuleShape* capsuleShape = new btCapsuleShape(boneChain.capsuleRadius, capsuleHeight);
 
@@ -757,8 +780,12 @@ void wiScene::Scene::RunPhysicsUpdateSystem(wiJobSystem::context& ctx, float dt)
 				capsuleTransform.setRotation(R);
 				capsuleTransform.setOrigin(T);
 
+				btTransform comOffset;
+				comOffset.setIdentity();
+	//			comOffset.setOrigin(btVector3(0.f,-XMVectorGetX(XMVectorScale(boneVec, 0.5f)),0.f));
+
 				// create the right body
-				btDefaultMotionState* myMotionState = new btDefaultMotionState(capsuleTransform);
+				btDefaultMotionState* myMotionState = new btDefaultMotionState(capsuleTransform, comOffset);
 
 				btRigidBody::btRigidBodyConstructionInfo rbInfo(1, myMotionState, capsuleShape, localInertia);
 				btRigidBody* rigidbody = new btRigidBody(rbInfo);
@@ -857,6 +884,38 @@ void wiScene::Scene::RunPhysicsUpdateSystem(wiJobSystem::context& ctx, float dt)
 
 	// Perform internal simulation step:
 	physicsEngine->dynamicsWorld->stepSimulation(dt, 10);
+
+
+#if 0
+	// Sync flexi chains with skeletons
+	for (int i = 0; i < flexiChains.GetCount(); ++i)
+	{
+		FlexiBoneChainComponent& boneChain = flexiChains[i];
+		//Entity boneEntity = flexiChains.GetEntity(i);
+
+		for (int g = 0; g < (int)boneChain.bones.size()-1; ++g)
+		{
+			Entity boneEntity = boneChain.bones[g];
+			
+			btRigidBody* rb = (btRigidBody*)boneChain.physicsBodies[g];
+
+			TransformComponent& transform = *transforms.GetComponent(boneEntity);
+
+			btMotionState* motionState = rb->getMotionState();
+			btTransform physicsTransform;
+
+			motionState->getWorldTransform(physicsTransform);
+			btVector3 T = physicsTransform.getOrigin();
+			btQuaternion R = physicsTransform.getRotation();
+
+			transform.translation_local = BulletUtil::fromBulletTranslation(T);
+			transform.rotation_local = BulletUtil::fromBulletQuaternion(R);
+			transform.SetDirty();
+
+			break;//TODO debug, just set first TM
+		}
+	}
+#endif
 
 	// Feedback physics engine state to system:
 	for (int i = 0; i < physicsEngine->dynamicsWorld->getCollisionObjectArray().size(); ++i)

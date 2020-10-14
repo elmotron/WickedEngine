@@ -31,7 +31,7 @@ wiScene::Scene::~Scene()
 void wiScene::Scene::Update(float dt)
 {
 	GraphicsDevice* device = wiRenderer::GetDevice();
-	if (device->CheckCapability(GraphicsDevice::GRAPHICSDEVICE_CAPABILITY_DESCRIPTOR_MANAGEMENT) && !descriptorTable.IsValid())
+	if (device->CheckCapability(GRAPHICSDEVICE_CAPABILITY_DESCRIPTOR_MANAGEMENT) && !descriptorTable.IsValid())
 	{
 		descriptorTable.resources.resize(DESCRIPTORTABLE_ENTRY_COUNT);
 		descriptorTable.resources[DESCRIPTORTABLE_ENTRY_SUBSETS_MATERIAL] = { CONSTANTBUFFER, 0, MAX_DESCRIPTOR_INDEXING };
@@ -79,7 +79,7 @@ void wiScene::Scene::Update(float dt)
 		bounds = AABB::Merge(bounds, group_bound);
 	}
 
-	if (device->CheckCapability(GraphicsDevice::GRAPHICSDEVICE_CAPABILITY_RAYTRACING))
+	if (device->CheckCapability(GRAPHICSDEVICE_CAPABILITY_RAYTRACING))
 	{
 		// Recreate top level acceleration structure if the object count changed:
 		if (dt > 0 && objects.GetCount() > 0 && objects.GetCount() != TLAS.desc.toplevel.count)

@@ -54,6 +54,7 @@ namespace wiGraphics
 		virtual bool CreateRootSignature(RootSignature* rootsig) { return false; }
 
 		virtual int CreateSubresource(Texture* texture, SUBRESOURCE_TYPE type, uint32_t firstSlice, uint32_t sliceCount, uint32_t firstMip, uint32_t mipCount) = 0;
+		virtual int CreateSubresource(GPUBuffer* buffer, SUBRESOURCE_TYPE type, uint64_t offset, uint64_t size = ~0) = 0;
 
 		virtual void WriteShadingRateValue(SHADING_RATE rate, void* dest) {};
 		virtual void WriteTopLevelAccelerationStructureInstance(const RaytracingAccelerationStructureDesc::TopLevel::Instance* instance, void* dest) {}
@@ -95,22 +96,6 @@ namespace wiGraphics
 
 		virtual Texture GetBackBuffer() = 0;
 
-		enum GRAPHICSDEVICE_CAPABILITY
-		{
-			GRAPHICSDEVICE_CAPABILITY_TESSELLATION,
-			GRAPHICSDEVICE_CAPABILITY_CONSERVATIVE_RASTERIZATION,
-			GRAPHICSDEVICE_CAPABILITY_RASTERIZER_ORDERED_VIEWS,
-			GRAPHICSDEVICE_CAPABILITY_UAV_LOAD_FORMAT_COMMON, // eg: R16G16B16A16_FLOAT, R8G8B8A8_UNORM and more common ones
-			GRAPHICSDEVICE_CAPABILITY_UAV_LOAD_FORMAT_R11G11B10_FLOAT,
-			GRAPHICSDEVICE_CAPABILITY_RENDERTARGET_AND_VIEWPORT_ARRAYINDEX_WITHOUT_GS,
-			GRAPHICSDEVICE_CAPABILITY_RAYTRACING,
-			GRAPHICSDEVICE_CAPABILITY_RAYTRACING_INLINE,
-			GRAPHICSDEVICE_CAPABILITY_DESCRIPTOR_MANAGEMENT,
-			GRAPHICSDEVICE_CAPABILITY_VARIABLE_RATE_SHADING,
-			GRAPHICSDEVICE_CAPABILITY_VARIABLE_RATE_SHADING_TIER2,
-			GRAPHICSDEVICE_CAPABILITY_MESH_SHADER,
-			GRAPHICSDEVICE_CAPABILITY_COUNT,
-		};
 		bool CheckCapability(GRAPHICSDEVICE_CAPABILITY capability) const;
 
 		uint32_t GetFormatStride(FORMAT value) const;

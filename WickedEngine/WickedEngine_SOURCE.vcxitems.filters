@@ -576,6 +576,7 @@
     <ClInclude Include="$(MSBuildThisFileDirectory)ScenePhysics.h">
       <Filter>ENGINE\System</Filter>
     </ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)wiSDLInput.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(MSBuildThisFileDirectory)LUA\lapi.c">
@@ -947,7 +948,10 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)wiEvent.cpp">
       <Filter>ENGINE\System</Filter>
     </ClCompile>
-    <ClCompile Include="$(MSBuildThisFileDirectory)Utility\xatlas.cpp">
+    <ClCompile Include="$(MSBuildThisFileDirectory)wiSDLInput.cpp">
+      <Filter>ENGINE\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Utility\stb_vorbis.c">
       <Filter>UTILITY</Filter>
     </ClCompile>
     <ClCompile Include="$(MSBuildThisFileDirectory)SceneAnimation.cpp">
@@ -968,6 +972,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)ScenePhysics.cpp">
       <Filter>ENGINE\System</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Utility\xatlas.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="$(MSBuildThisFileDirectory)ArchiveVersionHistory.txt" />
